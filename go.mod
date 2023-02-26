@@ -1,4 +1,4 @@
-module scriptExecutor
+module github.com/moaddib666/task_executor_sample.go
 
 go 1.18
 

@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/moaddib666/task_executor_sample.go/tasks"
 	"github.com/urfave/cli/v2"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"scriptExecutor/tasks"
 )
 
 func getStore() (*tasks.TaskStore, error) {

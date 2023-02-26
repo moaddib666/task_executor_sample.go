@@ -1,7 +1,7 @@
 package main
 
 import (
-	"scriptExecutor/tasks"
+	"github.com/moaddib666/task_executor_sample.go/tasks"
 )
 
 func main() {
