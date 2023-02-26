@@ -1,0 +1,34 @@
+bashTestTask:
+  name: bashTestTask
+  location: /Users/maxnikitenko/GolandProjects/task_executor_sample.go/examples/bash.sh
+  schema:
+    "$schema": http://json-schema.org/draft-07/schema#
+    properties:
+      cmd:
+        type: string
+      requestId:
+        type: string
+      user:
+        type: string
+    required:
+      - user
+      - cmd
+      - requestId
+    type: object
+pythonTestTask:
+  name: pythonTestTask
+  location: /Users/maxnikitenko/GolandProjects/task_executor_sample.go/examples/python.py
+  schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      cmd:
+        type: string
+      requestId:
+        type: string
+      user:
+        type: string
+    required:
+      - user
+      - cmd
+      - requestId
+    type: object
