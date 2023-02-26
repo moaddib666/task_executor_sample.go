@@ -140,7 +140,8 @@ func main() {
 
 					result := runner.Execute(t, argsMap)
 					jsonResult, err := json.MarshalIndent(result, "", "  ")
-					fmt.Printf("Task %s executed successfully with \nresult: \n%s\n", t.Name, jsonResult)
+					fmt.Printf("Task: `%s`\n", t.Name)
+					fmt.Printf("Result:\n%s\n", jsonResult)
 					return err
 				},
 			},

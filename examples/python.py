@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import json
+import socket
 
 
 def parse_header() -> dict:
@@ -22,7 +23,10 @@ def result(data: dict, exc: Exception = None):
 def main():
     header = parse_header()
     print("stdin parsed", json.dumps(header, indent=3))
-    print("hello")
+    cmd = header["data"]["cmd"]
+    if cmd == "hostname":
+        return result({"hostname": socket.gethostname()})
+    print("unknown command", cmd)
     return result({"foo": "bar"})
 
 

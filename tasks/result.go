@@ -1,7 +1,7 @@
 package tasks
 
 type TaskResult struct {
-	Caller  *Task
+	Caller  *Task       `json:"-"` // not serialized
 	Status  int         `json:"status"`
 	Reason  string      `json:"reason"`
 	Payload interface{} `json:"payload"`

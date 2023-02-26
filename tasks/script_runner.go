@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 )
 
@@ -32,6 +33,7 @@ func (s *ScriptRunner) Execute(task *Task, execArgs interface{}) *TaskResult {
 		result.SetFail(err.Error())
 		return result
 	}
+	caller, _ := filepath.Abs(os.Args[0])
 	header := &Header{
 		Meta: struct {
 			Protocol string `json:"protocol"`
@@ -39,7 +41,7 @@ func (s *ScriptRunner) Execute(task *Task, execArgs interface{}) *TaskResult {
 			TaskName string `json:"taskName"`
 		}{
 			"v1",
-			"self",
+			caller,
 			task.Name,
 		},
 		Data: args,
@@ -78,7 +80,6 @@ func (s *ScriptRunner) Execute(task *Task, execArgs interface{}) *TaskResult {
 		result.SetFail("Program ends with " + err.Error())
 	}
 	_ = pr.Close()
-	log.Printf("TASK::%s Finised with status: %d, reason: %s", result.Caller.Name, result.Status, result.Reason)
 	return result
 }
 
