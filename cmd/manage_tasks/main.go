@@ -14,7 +14,7 @@ func getStore() (*tasks.TaskStore, error) {
 	filename := os.Getenv("TASK_STORE")
 	if filename == "" {
 		filename = "/tmp/tasks.yaml"
-		fmt.Printf("env variable `TASK_STORE` not set, using default: %s", filename)
+		fmt.Printf("env variable `TASK_STORE` not set, using default: %s\n\n", filename)
 	}
 	store, err := tasks.NewTaskStore(filename)
 	if err != nil {

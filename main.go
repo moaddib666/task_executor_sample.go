@@ -31,12 +31,12 @@ func main() {
 	`
 
 	bashTask := tasks.NewTask("testBash", "./examples/bash.sh")
-	err := bashTask.SetSchemaFromBites([]byte(schema))
+	err := bashTask.SetSchemaFromBytes([]byte(schema))
 	if err != nil {
 		panic(err)
 	}
 	pythonTask := tasks.NewTask("testPython", "./examples/python.py")
-	err = pythonTask.SetSchemaFromBites([]byte(schema))
+	err = pythonTask.SetSchemaFromBytes([]byte(schema))
 	if err != nil {
 		panic(err)
 	}

@@ -19,7 +19,7 @@ func (t *Task) JsonSchema() string {
 	return string(schema)
 }
 
-func (t *Task) SetSchemaFromBites(schema []byte) error {
+func (t *Task) SetSchemaFromBytes(schema []byte) error {
 	// Parse the schema from JSON into a map[string]interface{}
 	if err := json.Unmarshal(schema, &t.Accept); err != nil {
 		return fmt.Errorf("failed to parse schema: %s", err)
