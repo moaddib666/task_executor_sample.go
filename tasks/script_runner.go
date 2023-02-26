@@ -27,7 +27,11 @@ func (s *ScriptRunner) Execute(task *Task, execArgs interface{}) *TaskResult {
 		Status: -1,
 		Reason: "No task result from " + task.Location,
 	}
-
+	args, err := task.ParseArgs(execArgs)
+	if err != nil {
+		result.SetFail(err.Error())
+		return result
+	}
 	header := &Header{
 		Meta: struct {
 			Protocol string `json:"protocol"`
@@ -38,7 +42,7 @@ func (s *ScriptRunner) Execute(task *Task, execArgs interface{}) *TaskResult {
 			"self",
 			task.Name,
 		},
-		Data: execArgs,
+		Data: args,
 	}
 	raw, err := json.Marshal(header)
 	reader := bytes.NewReader(raw)
@@ -81,7 +85,8 @@ func (s *ScriptRunner) Execute(task *Task, execArgs interface{}) *TaskResult {
 func (s *ScriptRunner) ExecuteAsync(task *Task, execArgs interface{}) {
 	s.wg.Add(1)
 	go func() {
-		s.Execute(task, execArgs)
+		r := s.Execute(task, execArgs)
+		log.Printf("TASK::%s Finised with status: %d, reason: %s", r.Caller.Name, r.Status, r.Reason)
 		s.wg.Done()
 	}()
 }

@@ -6,18 +6,45 @@ import (
 
 func main() {
 	runner := tasks.NewScriptRunner()
+	schema :=
+		`{
+		  "$schema": "http://json-schema.org/draft-07/schema#",
+		  "$id": "task.Default",
+		  "type": "object",
+		  "properties": {
+			"user": {
+			  "type": "string"
+			},
+			"cmd": {
+			  "type": "string"
+			},
+			"requestId": {
+			  "type": "string"
+			}
+		  },
+		  "required": [
+			"user",
+			"cmd",
+			"requestId"
+		  ]
+		}
+	`
+
 	bashTask := tasks.NewTask("testBash", "./examples/bash.sh")
-	pythonTask := tasks.NewTask("testPython", "./examples/python.py")
-	args := &struct {
-		User      string `json:"user"`
-		Cmd       string `json:"cmd"`
-		RequestId string `json:"requestId"`
-	}{
-		"tester",
-		"hostname",
-		"214215161263",
+	err := bashTask.SetSchemaFromBites([]byte(schema))
+	if err != nil {
+		panic(err)
 	}
-	runner.ExecuteAsync(bashTask, args)
-	runner.ExecuteAsync(pythonTask, args)
+	pythonTask := tasks.NewTask("testPython", "./examples/python.py")
+	err = pythonTask.SetSchemaFromBites([]byte(schema))
+	if err != nil {
+		panic(err)
+	}
+	argsMap := make(map[string]interface{})
+	argsMap["user"] = "tester"
+	argsMap["cmd"] = "hostname"
+	argsMap["requestId"] = "214215161263"
+	runner.ExecuteAsync(bashTask, argsMap)
+	runner.ExecuteAsync(pythonTask, argsMap)
 	runner.WaitUntilComplete()
 }
