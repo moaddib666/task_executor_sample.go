@@ -15,7 +15,7 @@ type ScriptRunner struct {
 	wg *sync.WaitGroup
 }
 
-func NewScriptRunner() *ScriptRunner {
+func NewScriptRunner() Runner {
 	return &ScriptRunner{
 		wg: &sync.WaitGroup{},
 	}
