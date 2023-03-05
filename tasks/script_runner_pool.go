@@ -2,12 +2,13 @@ package tasks
 
 import (
 	"context"
-	"log"
+	"github.com/sirupsen/logrus"
 	"runtime"
+	"sync"
 )
 
 type ScriptRunnerPool struct {
-	Runner
+	*ScriptRunner
 	poolSize  int
 	workQueue chan struct {
 		task     *Task
@@ -25,7 +26,7 @@ func (p *ScriptRunnerPool) startWorkerPool() {
 		for {
 			select {
 			case <-p.ctx.Done():
-				log.Printf("Worker pool stopped")
+				p.ScriptRunner.logger.Infof("Worker pool stopped")
 				// close channel
 				close(p.workQueue)
 				return
@@ -35,17 +36,16 @@ func (p *ScriptRunnerPool) startWorkerPool() {
 }
 
 func (p *ScriptRunnerPool) runPoolWorker(workerId int) {
-	log.Printf("Worker %d started", workerId)
+	p.ScriptRunner.logger.Debugf("Worker %d started", workerId)
 	for {
 		request := <-p.workQueue
 		// check if channel is closed
 		if request.task == nil {
-			log.Printf("Worker %d stopped", workerId)
+			p.ScriptRunner.logger.Debugf("Worker %d stopped", workerId)
 			return
 		}
-		log.Printf("Worker %d executing task %s", workerId, request.task.Name)
-		result := p.Execute(request.task, request.execArgs)
-		log.Printf("Worker %d finished task %s with status %d details %s", workerId, request.task.Name, result.Status, result.Reason)
+		p.ScriptRunner.logger.Debugf("Worker %d executing task %s", workerId, request.task.Name)
+		p.ScriptRunner.ExecuteAsync(request.task, request.execArgs)
 	}
 
 }
@@ -62,7 +62,11 @@ func NewScriptRunnerPool(poolSize int, ctx context.Context) Runner {
 		poolSize = runtime.NumCPU()
 	}
 	runner := &ScriptRunnerPool{
-		Runner:   NewScriptRunner(),
+		ScriptRunner: &ScriptRunner{
+			wg:           &sync.WaitGroup{},
+			asyncResults: make(chan *TaskResult),
+			logger:       logrus.New(),
+		},
 		poolSize: poolSize,
 		workQueue: make(chan struct {
 			task     *Task

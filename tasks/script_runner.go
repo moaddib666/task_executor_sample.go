@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,13 +12,21 @@ import (
 )
 
 type ScriptRunner struct {
-	wg *sync.WaitGroup
+	wg           *sync.WaitGroup
+	asyncResults chan *TaskResult
+	logger       *logrus.Logger
 }
 
 func NewScriptRunner() Runner {
 	return &ScriptRunner{
-		wg: &sync.WaitGroup{},
+		wg:           &sync.WaitGroup{},
+		asyncResults: make(chan *TaskResult),
+		logger:       logrus.New(),
 	}
+}
+
+func (s *ScriptRunner) SetLogger(logger *logrus.Logger) {
+	s.logger = logger
 }
 
 func (s *ScriptRunner) Execute(task *Task, execArgs interface{}) *TaskResult {
@@ -49,7 +57,7 @@ func (s *ScriptRunner) Execute(task *Task, execArgs interface{}) *TaskResult {
 	raw, err := json.Marshal(header)
 	reader := bytes.NewReader(raw)
 	if err != nil {
-		log.Fatal(err)
+		s.logger.Fatal(err)
 	}
 
 	cmd := exec.Command(task.Location)
@@ -73,7 +81,7 @@ func (s *ScriptRunner) Execute(task *Task, execArgs interface{}) *TaskResult {
 		if err == nil {
 			break
 		}
-		log.Printf("TASK::%s %s", task.Name, scanner.Text())
+		s.logger.Infof("TASK::%s %s", task.Name, scanner.Text())
 	}
 
 	if err = cmd.Wait(); err != nil {
@@ -87,11 +95,24 @@ func (s *ScriptRunner) ExecuteAsync(task *Task, execArgs interface{}) {
 	s.wg.Add(1)
 	go func() {
 		r := s.Execute(task, execArgs)
-		log.Printf("TASK::%s Finised with status: %d, reason: %s", r.Caller.Name, r.Status, r.Reason)
+		s.logger.Infof("TASK::%s Finised with status: %d, reason: %s", r.Caller.Name, r.Status, r.Reason)
 		s.wg.Done()
+		s.saveTaskResult(r)
 	}()
+}
+
+func (s *ScriptRunner) saveTaskResult(result *TaskResult) {
+	s.asyncResults <- result
 }
 
 func (s *ScriptRunner) WaitUntilComplete() {
 	s.wg.Wait()
+}
+
+func (s *ScriptRunner) GetAsyncResults() <-chan *TaskResult {
+	return s.asyncResults
+}
+
+func (s *ScriptRunner) GetAsyncResultsCount() int {
+	return len(s.asyncResults)
 }

@@ -1,11 +1,21 @@
 package main
 
 import (
+	"context"
 	"github.com/moaddib666/task_executor_sample.go/tasks"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	runner := tasks.NewScriptRunner()
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
+	logger.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+		DisableColors: false,
+	})
+	ctx := context.Background()
+	runner := tasks.NewScriptRunnerPool(0, ctx) // 0 means system cpu count
+	runner.SetLogger(logger)
 	schema :=
 		`{
 		  "$schema": "http://json-schema.org/draft-07/schema#",
@@ -47,4 +57,15 @@ func main() {
 	runner.ExecuteAsync(bashTask, argsMap)
 	runner.ExecuteAsync(pythonTask, argsMap)
 	runner.WaitUntilComplete()
+
+	// Output: async results
+	for {
+		select {
+		case result := <-runner.GetAsyncResults():
+			logger.Infof("Task executed: %s, status: %d, details: `%s`\n", result.Caller.Name, result.Status, result.Reason)
+		default:
+			return
+		}
+	}
+
 }
